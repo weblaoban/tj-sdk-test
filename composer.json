@@ -1,10 +1,10 @@
 {
     "name": "tj/sdk-test",
-    "description": "Yii 2 Basic Project Template",
-    "keywords": ["yii2", "framework", "basic", "project template"],
-    "homepage": "http://www.yiiframework.com/",
-    "type": "project",
+    "type": "library",
     "version": "1.0.0",
+    "description": "Uqpay payment SDK",
+    "keywords": ["uqpay", "payment"],
+    "homepage": "https://github.com/weblaoban/tj-sdk-test",
     "license": "BSD-3-Clause",
     "authors": [
         {
