@@ -6,7 +6,6 @@
     "keywords": ["uqpay", "payment"],
     "homepage": "https://github.com/weblaoban/tj-sdk-test",
     "license": "MIT",
-    "minimum-stability": "dev",
     "authors": [
         {
             "name": "tongjin",
