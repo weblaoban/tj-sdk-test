@@ -5,7 +5,7 @@
     "description": "Uqpay payment SDK",
     "keywords": ["uqpay", "payment"],
     "homepage": "https://github.com/weblaoban/tj-sdk-test",
-    "license": "BSD-3-Clause",
+    "license": "MIT",
     "minimum-stability": "dev",
     "authors": [
         {
@@ -13,13 +13,6 @@
             "email": "tongjin@uqpay.com"
         }
     ],
-    "support": {
-        "issues": "https://github.com/yiisoft/yii2/issues?state=open",
-        "forum": "http://www.yiiframework.com/forum/",
-        "wiki": "http://www.yiiframework.com/wiki/",
-        "irc": "irc://irc.freenode.net/yii",
-        "source": "https://github.com/yiisoft/yii2"
-    },
     "require": {
         "php": ">=5.4.0",
         "yiisoft/yii2": "~2.0.14",
@@ -68,12 +61,6 @@
             ]
         }
     },
-    "repositories": [
-        {
-            "type": "composer",
-            "url": "https://asset-packagist.org"
-        }
-    ],
     "autoload": {
         "psr-4": {
             "tj\\sdk\\test\\": "/"
