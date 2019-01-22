@@ -59,6 +59,9 @@
             "generateCookieValidationKey": [
                 "config/web.php"
             ]
+        },
+        "branch-alias": {
+            "dev-master": "1.0.1-dev"
         }
     },
     "autoload": {
