@@ -76,7 +76,7 @@
     ],
     "autoload": {
         "psr-4": {
-            "tj\\sdk\\test\\": "src/"
+            "tj\\sdk\\test\\": "/"
         }
     }
 }
