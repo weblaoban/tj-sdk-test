@@ -1,7 +1,8 @@
 <?php
 namespace tj\sdk\test\models\emvco;
 
-use app\models\common\BaseJsonRequestDTO;
+use tj\sdk\test\models\common\BaseJsonRequestDTO;
+
 class EmvcoCreateDTO extends BaseJsonRequestDTO
 {
     public $type;

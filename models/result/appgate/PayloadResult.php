@@ -1,5 +1,5 @@
 <?php
-namespace uqpay\payment\sdk\dto\result\appgate;
+namespace tj\sdk\test\models\result\appgate;
 
 class PayloadResult extends BaseAppgateResult {
   private $payload;

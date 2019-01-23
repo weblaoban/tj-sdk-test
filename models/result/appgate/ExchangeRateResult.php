@@ -1,5 +1,5 @@
 <?php
-namespace uqpay\payment\sdk\dto\result\appgate;
+namespace tj\sdk\test\models\result\appgate;
 
 class ExchangeRateResult extends BaseAppgateResult {
   private $originalCurrency; // 原币种

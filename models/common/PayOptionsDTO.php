@@ -1,7 +1,8 @@
 <?php
 namespace tj\sdk\test\models\common;
 
-use app\models\PayOptions;
+
+use tj\sdk\test\models\PayOptions;
 
 class PayOptionsDTO extends PayOptions {
   /**
