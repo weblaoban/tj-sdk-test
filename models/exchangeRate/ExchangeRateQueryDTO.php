@@ -1,6 +1,7 @@
 <?php
-namespace app\models\exchangeRate;
-use app\models\common\BaseJsonRequestDTO;
+namespace tj\sdk\test\models\exchangeRate;
+
+use tj\sdk\test\models\common\BaseJsonRequestDTO;
 
 class ExchangeRateQueryDTO extends BaseJsonRequestDTO {
   public $originalCurrency;

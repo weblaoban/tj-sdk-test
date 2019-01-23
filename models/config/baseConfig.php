@@ -1,6 +1,6 @@
 <?php
 
-namespace app\models\config;
+namespace tj\sdk\test\models\config;
 use yii\base\Model;
 
 class baseConfig extends Model

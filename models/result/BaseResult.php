@@ -1,6 +1,6 @@
 <?php
 
-namespace app\models\result;
+namespace tj\sdk\test\models\result;
 
 use yii\base\Model;
 

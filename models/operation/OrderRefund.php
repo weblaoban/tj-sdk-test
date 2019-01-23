@@ -1,5 +1,5 @@
 <?php
-namespace app\models\operation;
+namespace tj\sdk\test\models\operation;
 use yii\base\Model;
 
 class OrderRefund extends Model {

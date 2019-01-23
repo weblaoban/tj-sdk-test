@@ -1,9 +1,7 @@
 <?php
+namespace tj\sdk\test\models\pay;
 
-namespace app\models\pay;
-
-
-use app\models\common\OrderDTO;
+use tj\sdk\test\models\common\OrderDTO;
 
 class PayOrder extends OrderDTO
 {

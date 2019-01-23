@@ -1,8 +1,8 @@
 <?php
 
-namespace app\models\preAuth;
+namespace tj\sdk\test\models\preAuth;
 
-use app\models\common\OrderDTO;
+use tj\sdk\test\models\common\OrderDTO;
 
 class PreAuthOrder extends OrderDTO
 {

@@ -1,6 +1,6 @@
 <?php
 
-namespace app\utils;
+namespace tj\sdk\test\models\utils;
 
 use app\models\config\paygateConfig;
 use app\models\config\merchantConfig;

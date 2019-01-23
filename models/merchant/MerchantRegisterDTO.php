@@ -1,7 +1,7 @@
 <?php
-namespace app\models\merchant;
+namespace tj\sdk\test\models\merchant;
 
-use app\models\common\BaseJsonRequestDTO;
+use tj\sdk\test\models\common\BaseJsonRequestDTO;
 
 class MerchantRegisterDTO extends BaseJsonRequestDTO {
   public $name;

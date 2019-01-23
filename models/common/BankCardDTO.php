@@ -1,6 +1,5 @@
 <?php
-namespace app\models\common;
-
+namespace tj\sdk\test\models\common;
 use yii\base\Model;
 
 class BankCardDTO extends Model {

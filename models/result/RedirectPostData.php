@@ -1,5 +1,5 @@
 <?php
-namespace app\models\result;
+namespace tj\sdk\test\models\result;
 
 class RedirectPostData{
   public $apiURL;

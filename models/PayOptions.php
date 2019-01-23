@@ -1,5 +1,5 @@
 <?php
-namespace app\models;
+namespace tj\sdk\test\models;
 use yii\base\Model;
 
 class PayOptions extends Model

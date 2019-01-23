@@ -1,6 +1,5 @@
 <?php
-namespace app\models\emvco;
-
+namespace tj\sdk\test\models\emvco;
 
 use app\models\common\BaseJsonRequestDTO;
 

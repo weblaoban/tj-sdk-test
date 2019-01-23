@@ -1,7 +1,8 @@
 <?php
-namespace app\models\enroll;
+namespace tj\sdk\test\models\enroll;
 
-use app\models\common\PayOptionsDTO;
+
+use tj\sdk\test\models\common\PayOptionsDTO;
 
 class EnrollOrder extends PayOptionsDTO {
   public $orderId; // your order id

@@ -1,6 +1,6 @@
 <?php
 
-namespace app\models\common;
+namespace tj\sdk\test\models\common;
 
 class OrderDTO extends PayOptionsDTO
 {

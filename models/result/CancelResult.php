@@ -1,5 +1,5 @@
 <?php
-namespace uqpay\payment\sdk\dto\result;
+namespace tj\sdk\test\models\result;
 class CancelResult extends RefundResult {
 
 }
