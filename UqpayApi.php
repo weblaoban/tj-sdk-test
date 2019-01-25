@@ -1,30 +1,28 @@
 <?php
 
-namespace app;
+namespace tj\sdk\test;
 
-use app\models\common\BankCardDTO;
-use app\models\common\BankCardExtendDTO;
-use app\models\common\BaseJsonRequestDTO;
-use app\models\common\MerchantHostDTO;
-use app\models\common\PayOptionsDTO;
-use app\models\common\ServerHostDTO;
-use app\models\config\AppgateConfig;
-use app\models\config\cashierConfig;
-use app\models\config\merchantConfig;
-use app\models\config\paygateConfig;
-use app\models\emvco\EmvcoCreateDTO;
-use app\models\emvco\EmvcoGetPayloadDTO;
-use app\models\enroll\EnrollOrder;
-use app\models\enroll\VerifyOrder;
-use app\models\exchangeRate\ExchangeRateQueryDTO;
-use app\models\merchant\MerchantRegisterDTO;
-use app\models\pay\PayOrder;
-use app\models\preAuth\PreAuthOrder;
-use app\models\result\TransResult;
-use app\utils\httpRequest;
-use app\utils\payMethod;
-use app\utils\payUtil;
-use app\models\common\AuthDTO;
+use tj\sdk\test\models\AuthDTO;
+use tj\sdk\test\models\common\BankCardDTO;
+use tj\sdk\test\models\common\BaseJsonRequestDTO;
+use tj\sdk\test\models\common\MerchantHostDTO;
+use tj\sdk\test\models\common\ServerHostDTO;
+use tj\sdk\test\models\config\AppgateConfig;
+use tj\sdk\test\models\config\cashierConfig;
+use tj\sdk\test\models\config\merchantConfig;
+use tj\sdk\test\models\config\paygateConfig;
+use tj\sdk\test\models\emvco\EmvcoCreateDTO;
+use tj\sdk\test\models\emvco\EmvcoGetPayloadDTO;
+use tj\sdk\test\models\enroll\EnrollOrder;
+use tj\sdk\test\models\enroll\VerifyOrder;
+use tj\sdk\test\models\exchangeRate\ExchangeRateQueryDTO;
+use tj\sdk\test\models\merchant\MerchantRegisterDTO;
+use tj\sdk\test\models\pay\PayOrder;
+use tj\sdk\test\models\preAuth\PreAuthOrder;
+use tj\sdk\test\models\result\TransResult;
+use tj\sdk\test\utils\httpRequest;
+use tj\sdk\test\utils\payMethod;
+use tj\sdk\test\utils\payUtil;
 use Yii;
 
 include 'utils/constants.php';
@@ -43,7 +41,7 @@ class UqpayApi
         $this->merchantConfig = $merchantConfig;
         $this->cashierConfig = $cashierConfig;
         $this->appgateConfig = $appgateConfig;
-        $this->auth = new authDTO();
+        $this->auth = new AuthDTO();
         $this->auth->agentId = $merchantConfig->agentId;
         $this->auth->merchantId = $merchantConfig->id;
     }
@@ -75,26 +73,24 @@ class UqpayApi
     {
         $payMethod = new payMethod();
         $payUtil = new payUtil();
-        $payData["signType"] = $payMethod->SignTypeEnum['RSA'];
-
         $paramsMap = $payUtil->generateDefPayParams($payData, $this->merchantConfig);
         switch ($scenes) {
             case "QRCode":
-                $paramsMap[PAY_OPTIONS_SCAN_TYPE] = $payMethod->UqpayScanType[$payData['scanType']];
-                if ($payData["scanType"] === 0) {
-                    $paramsMap["identity"] = $payData["identity"];
+                $paramsMap[PAY_OPTIONS_SCAN_TYPE] = $payMethod->UqpayScanType[$payData->scanType];
+                if ($payData->scanType === 0) {
+                    $paramsMap["identity"] = $payData->identity;
                 }
                 break;
             case "OfflineQRCode":
                 $paramsMap[PAY_OPTIONS_SCAN_TYPE] = $payMethod->UqpayScanType[$payData->scanType];
-                $paramsMap[PAY_OPTIONS_MERCHANT_CITY] = $payData['merchantCity'];
-                $paramsMap[PAY_OPTIONS_TERMINALID_ID] = $payData['terminalId'];
+                $paramsMap[PAY_OPTIONS_MERCHANT_CITY] = $payData->merchantCity;
+                $paramsMap[PAY_OPTIONS_TERMINALID_ID] = $payData->terminalId;
                 break;
             case "OnlinePay":
-                $paramsMap[PAY_OPTIONS_SYNC_NOTICE_URL] = $payData['returnUrl'];
+                $paramsMap[PAY_OPTIONS_SYNC_NOTICE_URL] = $payData->returnUrl;
                 break;
             case "InApp":
-                $paramsMap[PAY_OPTIONS_SYNC_NOTICE_URL] = $payData['returnUrl'];
+                $paramsMap[PAY_OPTIONS_SYNC_NOTICE_URL] = $payData->returnUrl;
                 break;
             case "CreditCard":
             case "ThreeDCreditCard":
@@ -111,7 +107,9 @@ class UqpayApi
                 break;
         }
         ksort($paramsMap);
-        return $payUtil->signParams($paramsMap, $this->paygateConfig);
+        $result = $payUtil->signParams($paramsMap, $this->paygateConfig);
+        $result["signType"] = $payData->signType || $payMethod->SignTypeEnum['RSA'];
+        return $result;
     }
 
 
@@ -158,22 +156,21 @@ class UqpayApi
         $payMethod = new payMethod();
         $UqpayScanType = $payMethod->UqpayScanType;
 //        $this->validatePayData($pay);
-        if (!array_key_exists('scanType', $pay)) Yii::warning("uqpay qr code payment need Scan Type");
-        if (strcmp($pay["scanType"], $UqpayScanType["Merchant"]) == 0 && !array_key_exists('identity', $pay)) Yii::warning("uqpay qr code payment need the identity data when scan type is merchant");
-        $payUtil = new payUtil();
-        $paramsMap = $payUtil->generatePayParamsMap($pay, $this->merchantConfig);
+        if ($pay->scanType) Yii::warning("uqpay qr code payment need Scan Type");
+        if (strcmp($pay->scanType, $UqpayScanType["Merchant"]) == 0 && $pay->identity) Yii::warning("uqpay qr code payment need the identity data when scan type is merchant");
+        $paramsMap = $this->generatePayParamsMap($pay, $scenes);
         $result = $this->directFormPost($url, $paramsMap);
         return $result;
     }
 
     private function OfflineQRCodePayment($pay, $url, $scenes)
     {
-        if ($pay["identity"] == null)
+        if ($pay->identity == null)
             Yii::warning("uqpay offline qr code payment need the identity data");
-        if ($pay["merchantCity"] == null) {
+        if ($pay->merchantCity == null) {
             Yii::warning("uqpay offline qr code payment need the merchant city data");
         }
-        if ($pay["terminalID"] == null) {
+        if ($pay->terminalID == null) {
             Yii::warning("uqpay offline qr code payment need the terminal id data");
         }
         $paramsMap = $this->generatePayParamsMap($pay, $scenes);
@@ -182,12 +179,11 @@ class UqpayApi
 
     private function RedirectPayment($payOptions, $url, $scenes)
     {
-        if ($payOptions["returnUrl"] == null || $payOptions["returnUrl"] == "") {
+        if ($payOptions->returnUrl == null || $payOptions->returnUrl == "") {
             Yii::warning("uqpay online payment need sync notice url");
         }
-        $payUtil = new payUtil();
         $paramsMap = $this->generatePayParamsMap($payOptions, $scenes);
-        $paramsMap[PAY_OPTIONS_SYNC_NOTICE_URL] = $payOptions["returnUrl"];
+        $paramsMap[PAY_OPTIONS_SYNC_NOTICE_URL] = $payOptions->returnUrl;
         $transResult = new TransResult($paramsMap, $url, $scenes);
         return $transResult;
     }
@@ -214,7 +210,7 @@ class UqpayApi
 
     private function ThreeDSecurePayment($payData, $url, $scenes)
     {
-        if ($payData["returnUrl"] == null || strcmp($payData["returnUrl"], "") == 0)
+        if ($payData->returnUrl == null || strcmp($payData->returnUrl, "") == 0)
             Yii::warning("uqpay 3D secure payment need sync notice url");
         $paramsData = $this->generatePayParamsMap($payData, $scenes);
         $transResult = new TransResult($paramsData, $url, $scenes);
@@ -224,10 +220,10 @@ class UqpayApi
 
     private function InAppPayment($payData, $url, $scenes)
     {
-        if ($payData["clientType"] == null) Yii::warning("client type is required for uqpay in-app payment");
+        if ($payData->clientType == null) Yii::warning("client type is required for uqpay in-app payment");
         $payMethod = new payMethod();
         $paymentSupportClient = $payMethod->paymentSupportClient;
-        if (strcmp($payData["clientType"], $paymentSupportClient["PC_WEB"]) == 0) Yii::warning("uqpay in-app payment not support pc clientType");
+        if (strcmp($payData->clientType, $paymentSupportClient["PC_WEB"]) == 0) Yii::warning("uqpay in-app payment not support pc clientType");
         $payUtil = new payUtil();
         $paramsMap = $this->generatePayParamsMap($payData, $scenes);
         $result = $this->directFormPost($url, $paramsMap);
@@ -298,73 +294,67 @@ class UqpayApi
 //===========================================
 
     /**
-     * @param $order
+     * @param PayOrder $order
      * @return mixed|null|TransResult
      */
 
 //PayOrder $order
-    public function Pay($options)
+    public function Pay(PayOrder $order)
     {
-        $order = new PayOrder();
-        $order->attributes = $options;
         if ($order->validate()) {
             $payMethodObject = new payMethod();
             $UqpayTradeType = $payMethodObject->UqpayTradeType;
-            $order["transType"] = $UqpayTradeType["pay"];
+            $order->transType = $UqpayTradeType["pay"];
             $payMethod = $payMethodObject->payMethod();
-            $scenes = $payMethod[$order["methodId"]];
+            $scenes = $payMethod[$order->methodId];
             switch ($scenes) {
                 case "QRCode":
-                    return $result = $this->QRCodePayment($options, $this->apiUrl(PAYGATE_API_PAY), $scenes);
+                    return $result = $this->QRCodePayment($order, $this->apiUrl(PAYGATE_API_PAY), $scenes);
                     break;
                 case "OfflineQRCode":
-                    return $this->OfflineQRCodePayment($options, $this->paygateApiUrl(PAYGATE_API_PAY), $scenes);
+                    return $this->OfflineQRCodePayment($order, $this->paygateApiUrl(PAYGATE_API_PAY), $scenes);
                 case "OnlinePay":
-                    return $this->RedirectPayment($options, $this->paygateApiUrl(PAYGATE_API_PAY), $scenes);
+                    return $this->RedirectPayment($order, $this->paygateApiUrl(PAYGATE_API_PAY), $scenes);
                 case "InApp":
-                    return $result = $this->InAppPayment($options, $this->apiUrl(PAYGATE_API_PAY), $scenes);
+                    return $result = $this->InAppPayment($order, $this->apiUrl(PAYGATE_API_PAY), $scenes);
                     break;
                 case "CreditCard":
-                    switch ($options->methodId) {
+                    switch ($order->methodId) {
                         case $payMethodObject->AMEX:
                         case $payMethodObject->JCB:
                         case $payMethodObject->Master:
                         case $payMethodObject->VISA:
                             $bankCard = new BankCardDTO();
-                            $bankCard->attributes=$options;
-                            if($bankCard->validate()){
-                                $order->bankCard=$bankCard;
-                            }else{
-                                $errors = $bankCard->errors;
-                                var_dump($errors);
-                                return $errors;
-                            }
+                            $bankCard->attributes = $order->bankCard;
+                        if($bankCard->validate()){
+                            return $this->CreditCardPayment($order, $this->apiUrl(PAYGATE_API_PAY), $scenes);
+                        }else{
+                            $errors = $bankCard->errors;
+                            return $errors;
+                        }
                             break;
                         default:
+                            return;
                     }
-                    return $this->CreditCardPayment($options, $this->apiUrl(PAYGATE_API_PAY), $scenes);
                 case "ThreeDCreditCard":
-                    return $this->ThreeDSecurePayment($options, $this->apiUrl(PAYGATE_API_PAY), $scenes);
+                    return $this->ThreeDSecurePayment($order, $this->apiUrl(PAYGATE_API_PAY), $scenes);
                 case "MerchantHost":
                     $merchantHost = new MerchantHostDTO();
-                    $merchantHost->attributes=$options;
+                    $merchantHost->attributes=$order->merchantHost;
                     if($merchantHost->validate()){
-                        $order->merchantHost=$merchantHost;
-                        return $this->MerchantHostPayment($options, $this->apiUrl(PAYGATE_API_PAY), $scenes);
+                        return $this->MerchantHostPayment($order, $this->apiUrl(PAYGATE_API_PAY), $scenes);
                     }else{
                         $errors = $merchantHost->errors;
-                        var_dump($errors);
                         return $errors;
                     }
                 case "ServerHost":
                     $serverHost = new ServerHostDTO();
-                    $serverHost->attributes=$options;
+                    $serverHost->attributes=$order;
                     if($serverHost->validate()){
                         $order->merchantHost=$serverHost;
-                        return $this->ServerHostPayment($options, $this->apiUrl(PAYGATE_API_PAY), $scenes);
+                        return $this->ServerHostPayment($order, $this->apiUrl(PAYGATE_API_PAY), $scenes);
                     }else{
                         $errors = $serverHost->errors;
-                        var_dump($errors);
                         return $errors;
                     }
                 default:
@@ -386,7 +376,7 @@ class UqpayApi
             case "preauth":
                 $payMethodObject = new payMethod();
                 $payMethod = $payMethodObject->payMethod();
-                $scenes = $payMethod[$order["methodId"]];
+                $scenes = $payMethod[$order->methodId];
                 switch ($scenes) {
                     case "InApp":
                         return $this->InAppPayment($order, $this->paygateApiUrl(PAYGATE_API_PRE_AUTH), $scenes);
@@ -478,51 +468,18 @@ class UqpayApi
     //===========================================
     // Cashier API
     //===========================================
-    public function generateCashierLink($cashier)
-    {
-        $paramsMap = $cashier;
-        $payUtil = new payUtil();
-        ksort($paramsMap);
-        $paramsMap = $payUtil->signParams($paramsMap, $this->cashierConfig);
-        return $this->cashierConfig['apiRoot'] ."?" . http_build_query($paramsMap);
-    }
+//    public function generateCashierLink($cashier)
+//    {
+//        $paramsMap = $cashier;
+//        $payUtil = new payUtil();
+//        ksort($paramsMap);
+//        $paramsMap = $payUtil->signParams($paramsMap, $this->cashierConfig);
+//        return $this->cashierConfig['apiRoot'] ."?" . http_build_query($paramsMap);
+//    }
 
 
     public function actionIndex()
     {
-//        $authDto = new AuthDTO();
-//        $authDto->merchantId='1005004';
-
-//        $model = new BankCardDTO();
-        $options = new PayOptionsDTO();
-        $options->attributes = \Yii::$app->request->get();
-        $bankCard = new BankCardExtendDTO();
-        var_dump($options);
-//        var_dump(\Yii::$app->request->get());
-        $bankCard->attributes = \Yii::$app->request->get();
-//        var_dump($bankCard);
-        $merchantHost = new MerchantHostDTO();
-        $merchantHost->attributes = \Yii::$app->request->get();
-//        var_dump($merchantHost);
-        if ($merchantHost->validate()) {
-            // 所有输入数据都有效 all inputs are valid
-
-            echo(1111);
-        } else {
-            // 验证失败：$errors 是一个包含错误信息的数组
-            $errors = $merchantHost->errors;
-            var_dump($errors);
-        }
-        return;
-        if ($authDto->validate()) {
-            // 所有输入数据都有效 all inputs are valid
-
-            echo(1111);
-        } else {
-            // 验证失败：$errors 是一个包含错误信息的数组
-            $errors = $authDto->errors;
-            print_r($errors);
-        }
-//        return $this->render('index');
+        echo 'welcome';
     }
 }

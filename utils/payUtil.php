@@ -1,9 +1,9 @@
 <?php
 
-namespace tj\sdk\test\models\utils;
+namespace tj\sdk\test\utils;
 
-use app\models\config\paygateConfig;
-use app\models\config\merchantConfig;
+use tj\sdk\test\models\config\merchantConfig;
+use tj\sdk\test\models\config\paygateConfig;
 use Yii;
 
 class payUtil
@@ -252,8 +252,8 @@ function generateServerHostPayParams($params){
         }
         ksort($needVerifyParams);
         $paramsQuery = urldecode(http_build_query($needVerifyParams));
-        $RSAUtil = new RSAUtil;
-        $verify = $RSAUtil->verify($paramsQuery, (string)$paramsMap[AUTH_SIGN], $config->getRSA()->publicKeyPath->getPublicKey);
+        $RSAUtil = new RSAUtil();
+        $verify = $RSAUtil->verify($paramsQuery, (string)$paramsMap[AUTH_SIGN], $config->getRSA()->publicKeyPath);
         if (!(boolean)$verify)  Yii::warning("The payment result is invalid, be sure is from the UQPAY server");
     }
 

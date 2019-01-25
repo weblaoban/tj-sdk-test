@@ -1,6 +1,6 @@
 <?php
 
-namespace tj\sdk\test\models\utils;
+namespace tj\sdk\test\utils;
 
 
 class payMethod

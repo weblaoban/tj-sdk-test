@@ -1,13 +1,15 @@
 <?php
-namespace tj\sdk\test\models\utils;
+namespace tj\sdk\test\utils;
+use Yii;
 class RSAUtil {
 
 //throws UqpayRSAException
   function verify($data,$sign,$publicKey) {
           //读取公钥文件
-          $pubKey = file_get_contents($publicKey);
+          $dirPath = Yii::$app->basePath;
+          $publicKey = file_get_contents($dirPath.'\\'.$publicKey);
           //转换为openssl格式密钥
-          $res = openssl_get_publickey($pubKey);
+          $res = openssl_get_publickey($publicKey);
           //调用openssl内置方法验签，返回bool值
           $result = (bool)openssl_verify($data, base64_decode($sign), $res);
           //释放资源

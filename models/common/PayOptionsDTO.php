@@ -23,6 +23,7 @@ class PayOptionsDTO extends PayOptions {
   public $returnUrl; // sync notice url
   public $scanType; // only required for qr code payment
   public $identity; // only required for qr code payment when scan type is Merchant
+    public $signType;
 
   public $channelInfo;
   public $extendInfo;

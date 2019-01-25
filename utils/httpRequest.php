@@ -1,5 +1,5 @@
 <?php
-namespace tj\sdk\test\models\utils;
+namespace tj\sdk\test\utils;
 use GuzzleHttp\Client;
 use Yii;
 
