@@ -1,6 +1,7 @@
 <?php
 
 define("AUTH_SIGN", "sign");
+define("AUTH_SIGN_TYPE", "signtype");
 define("AUTH_MERCHANT_ID", "merchantid");
 define("AUTH_AGENT_ID", "agentid");
 define("PAY_OPTIONS_TRADE_TYPE", "transtype");
