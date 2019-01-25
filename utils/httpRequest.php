@@ -10,9 +10,6 @@ class httpRequest
         $client = new Client(["verify"=>false,"timeout"=>"2.0","http_errors"=>false]);
         $response = $client->post($url, ["form_params" => $data]);
         $code = $response->getStatusCode();
-        if($code>=200&&$code<300){
-            return $response;
-        }
         return $response;
     }
 
