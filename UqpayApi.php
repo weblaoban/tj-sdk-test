@@ -108,7 +108,7 @@ class UqpayApi
         }
         ksort($paramsMap);
         $result = $payUtil->signParams($paramsMap, $this->paygateConfig);
-        $result["signType"] = $payData->signType || $payMethod->SignTypeEnum['RSA'];
+//        $result["signType"] = $payData->signType?$payData->signType: (string)$payMethod->SignTypeEnum['RSA'];
         return $result;
     }
 
@@ -118,8 +118,12 @@ class UqpayApi
         $payUtil = new payUtil();
         $httpRequest = new httpRequest();
         $resultMap = $httpRequest->httpArrayPost($url, $paramsMap);
-        $payUtil->verifyUqpayNotice($resultMap, $this->paygateConfig);
-        return $resultMap;
+        $code = $resultMap->getStatusCode();
+        $result = json_decode((string)$resultMap->getBody());
+        if ($code >= 200 && $code < 300) {
+            $payUtil->verifyUqpayNotice($result, $this->paygateConfig);
+        }
+        return $result;
     }
 
     private function directJsonPost($url, $paramsMap)
@@ -335,12 +339,12 @@ class UqpayApi
                         case $payMethodObject->VISA:
                             $bankCard = new BankCardDTO();
                             $bankCard->attributes = $order->bankCard;
-                        if($bankCard->validate()){
-                            return $this->CreditCardPayment($order, $this->apiUrl(PAYGATE_API_PAY), $scenes);
-                        }else{
-                            $errors = $bankCard->errors;
-                            return $errors;
-                        }
+                            if($bankCard->validate()){
+                                return $this->CreditCardPayment($order, $this->apiUrl(PAYGATE_API_PAY), $scenes);
+                            }else{
+                                $errors = $bankCard->errors;
+                                return $errors;
+                            }
                             break;
                         default:
                             return;

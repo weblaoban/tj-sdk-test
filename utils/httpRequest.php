@@ -7,29 +7,28 @@ class httpRequest
 {
     function httpArrayPost($url, $data)
     {
-        $client = new Client(["verify"=>false]);
+        $client = new Client(["verify"=>false,"timeout"=>"2.0","http_errors"=>false]);
         $response = $client->post($url, ["form_params" => $data]);
         $code = $response->getStatusCode();
         if($code>=200&&$code<300){
-            return json_decode((string)$response->getBody(),true);
+            return $response;
         }
-        $result = json_decode((string)$response->getBody(),true);
-        Yii::warning($result->code.''.$result->message);
+        return $response;
     }
 
     function httpRedirectArrayPost($url, $data){
-        $client = new Client(["verify"=>false]);
+        $client = new Client(["verify"=>false,"timeout"=>"2.0","http_errors"=>false]);
         $response = $client->post($url, ["form_params" => $data]);
         $code = $response->getStatusCode();
         if($code>=200&&$code<300){
             return (string) $response->getBody();
         }
         $result = json_decode((string)$response->getBody(),true);
-        Yii::warning($result->code.''.$result->message);
+        return ["code"=>$result->code,"message"=>$result->message];
     }
 
     function httpJsonPost($url, $data){
-        $client = new Client(["verify"=>false]);
+        $client = new Client(["verify"=>false,"timeout"=>"2.0","http_errors"=>false]);
         $response = $client->post($url, ["form_params" => \GuzzleHttp\json_encode($data),'headers' => [
             'Accept'     => 'application/json;charset=UTF-8',
         ]]);
@@ -38,6 +37,6 @@ class httpRequest
             return (string) $response->getBody();
         }
         $result = json_decode((string)$response->getBody(),true);
-        Yii::warning($result->code.''.$result->message);
+        return ["code"=>$result->code,"message"=>$result->message];
     }
 }

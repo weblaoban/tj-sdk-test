@@ -16,7 +16,6 @@ class baseConfig extends Model
 
     public function getRSA()
     {
-        var_dump($this->testMode);
         if ($this->testMode) {
             return $this->testRSA;
         }

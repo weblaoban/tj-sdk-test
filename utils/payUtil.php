@@ -20,13 +20,13 @@ class payUtil
         $paramsMap[ORDER_DATE] = (string)$payData["date"];
         $paramsMap[PAY_OPTIONS_CLIENT_TYPE] = (string)$payData["clientType"];
         $paramsMap[PAY_OPTIONS_CLIENT_IP] = (string)$payData["clientIp"];
-        if (array_key_exists('quantity',$payData)) {
+        if (array_key_exists('quantity',$payData) && strcmp($payData['quantity'],'')!=0) {
             $paramsMap[ORDER_QUANTITY] = (string)$payData["quantity"];
         }
-        if (array_key_exists('storeId',$payData)) {
+        if (array_key_exists('storeId',$payData) && strcmp($payData['storeId'],'')!=0) {
             $paramsMap[ORDER_STORE_ID] = (string)$payData["storeId"];
         }
-        if (array_key_exists('seller',$payData)) {
+        if (array_key_exists('seller',$payData) && strcmp($payData['seller'],'')!=0) {
             $paramsMap[ORDER_SELLER] = (string)$payData["seller"];
         }
         if (array_key_exists('channelInfo',$payData) && strcmp($payData["channelInfo"], "") != 0) {
@@ -39,6 +39,7 @@ class payUtil
 
         $paramsMap[PAY_OPTIONS_TRADE_TYPE] = $payData["transType"];
         $paramsMap[PAY_OPTIONS_ASYNC_NOTICE_URL] = $payData["callbackUrl"];
+        $paramsMap[PAY_OPTIONS_SYNC_NOTICE_URL] = $payData["returnUrl"];
         return $paramsMap;
     }
 
@@ -65,30 +66,30 @@ class payUtil
     }
 
 
-function generateMerchantHostPayParams($params){
-    $paramsMap = array();
-$paramsMap[CREDIT_CARD_CARD_NUM] = $params->cardNum;
-$paramsMap[CREDIT_CARD_PHONE] = $params->phone;
-if($params->expireMonth){
-    $paramsMap[CREDIT_CARD_EXPIRE_MONTH] = $params->expireMonth;
-}
-if($params->expireYear){
-    $paramsMap[CREDIT_CARD_EXPIRE_YEAR] = $params->expireYear;
-}
-return $paramsMap;
-}
+    function generateMerchantHostPayParams($params){
+        $paramsMap = array();
+        $paramsMap[CREDIT_CARD_CARD_NUM] = $params->cardNum;
+        $paramsMap[CREDIT_CARD_PHONE] = $params->phone;
+        if($params->expireMonth){
+            $paramsMap[CREDIT_CARD_EXPIRE_MONTH] = $params->expireMonth;
+        }
+        if($params->expireYear){
+            $paramsMap[CREDIT_CARD_EXPIRE_YEAR] = $params->expireYear;
+        }
+        return $paramsMap;
+    }
 
-function generateServerHostPayParams($params){
-    $paramsMap = array();
+    function generateServerHostPayParams($params){
+        $paramsMap = array();
         $paramsMap[CREDIT_CARD_CARD_NUM] = $params->cardNum;
         $paramsMap[CREDIT_CARD_PHONE] = $params->phone;
         $paramsMap[CREDIT_TOKEN] = $params->token;
-    if($params->expireMonth){
-        $paramsMap[CREDIT_CARD_EXPIRE_MONTH] = $params->expireMonth;
-    }
-    if($params->expireYear){
-        $paramsMap[CREDIT_CARD_EXPIRE_YEAR] = $params->expireYear;
-    }
+        if($params->expireMonth){
+            $paramsMap[CREDIT_CARD_EXPIRE_MONTH] = $params->expireMonth;
+        }
+        if($params->expireYear){
+            $paramsMap[CREDIT_CARD_EXPIRE_YEAR] = $params->expireYear;
+        }
         return $paramsMap;
     }
 
@@ -242,19 +243,24 @@ function generateServerHostPayParams($params){
     }
     function verifyUqpayNotice($paramsMap, paygateConfig $config)
     {
-        if (!$paramsMap[AUTH_SIGN]){
+        $paramsMap = $this->object_to_array($paramsMap);
+        if (!array_key_exists(AUTH_SIGN,$paramsMap)){
             echo json_encode(["code"=>"400","message"=>"The payment result is not a valid uqpay result, sign data is missing"]);
         }
+
         $needVerifyParams = array();
         foreach ($paramsMap as $k => $v) {
-            if ($k != AUTH_SIGN) {
-                $needVerifyParams[$k] = (string)$v;
+            if ($k != AUTH_SIGN && $k != AUTH_SIGN_TYPE) {
+                $needVerifyParams[$k] = $v;
             }
         }
         ksort($needVerifyParams);
         $paramsQuery = urldecode(http_build_query($needVerifyParams));
-        $RSAUtil = new RSAUtil();
-        $verify = $RSAUtil->verify($paramsQuery, (string)$paramsMap[AUTH_SIGN], $config->getRSA()->publicKeyPath);
+        $RSAUtil = new RSAUtil;
+        $dirPath = Yii::$app->basePath;
+        $pubPath = $config->getRSA()->publicKeyPath;
+        $pubKey = file_get_contents($dirPath.'\\'.$pubPath);
+        $verify = $RSAUtil->verify($paramsQuery, (string)$paramsMap[AUTH_SIGN], $pubKey);
         if (!(boolean)$verify){
             echo json_encode(["code"=>"400","message"=>"The payment result is invalid, be sure is from the UQPAY server"]);
         };
