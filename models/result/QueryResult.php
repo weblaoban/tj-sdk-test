@@ -26,7 +26,7 @@ class QueryResult extends BaseResult
         $this->methodId = (int)(string)$mapResult[PAY_OPTIONS_METHOD_ID];
         $this->state = (string)$mapResult[RESULT_STATE];
         $this->channelInfo = (string)$mapResult[ORDER_CHANNEL_INFO];
-        $this->extendInfo = (string)$mapResult[ORDER_EXTEND_INFO];
+        $this->extendInfo = json_encode($mapResult[ORDER_EXTEND_INFO]);
         $this->relatedId = (string)$mapResult[RESULT_UQPAY_RELATED_ID];
     }
 }

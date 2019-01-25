@@ -30,6 +30,6 @@ class RefundResult
         $this->uqOrderId = (int)(string)$mapResult[RESULT_UQPAY_ORDER_ID];
         $this->amount = $mapResult[ORDER_AMOUNT];
         $this->state = (string)$mapResult[RESULT_STATE];
-        $this->extendInfo = (string)$mapResult[ORDER_EXTEND_INFO];
+        $this->extendInfo = json_encode($mapResult[ORDER_EXTEND_INFO]);
     }
 }

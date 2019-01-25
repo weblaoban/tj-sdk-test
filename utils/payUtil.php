@@ -30,10 +30,10 @@ class payUtil
             $paramsMap[ORDER_SELLER] = (string)$payData["seller"];
         }
         if (array_key_exists('channelInfo',$payData) && strcmp($payData["channelInfo"], "") != 0) {
-            $paramsMap[ORDER_CHANNEL_INFO] = $payData["channelInfo"];
+            $paramsMap[ORDER_CHANNEL_INFO] = json_encode($payData["channelInfo"]);
         }
         if (array_key_exists('extendInfo',$payData) && strcmp($payData["extendInfo"], "") != 0) {
-            $paramsMap[ORDER_EXTEND_INFO] = $payData["extendInfo"];
+            $paramsMap[ORDER_EXTEND_INFO] = json_encode($payData["extendInfo"]);
         }
         $paramsMap[PAY_OPTIONS_METHOD_ID] = (string)$payData["methodId"];
 
@@ -107,10 +107,10 @@ function generateServerHostPayParams($params){
         $paramsMap[PAY_OPTIONS_CLIENT_TYPE] = $payData->clientType;
         $paramsMap[PAY_OPTIONS_CLIENT_IP] = $payData->clientIp;
         if ($payData->channelInfo != null && $payData->channelInfo != "") {
-            $paramsMap[ORDER_CHANNEL_INFO] = $payData->channelInfo;
+            $paramsMap[ORDER_CHANNEL_INFO] = json_encode($payData->channelInfo);
         }
         if ($payData->extendInfo != null && $payData->extendInfo != "") {
-            $paramsMap[ORDER_EXTEND_INFO] = $payData->extendInfo;
+            $paramsMap[ORDER_EXTEND_INFO] = json_encode($payData->extendInfo);
         }
         $paramsMap[PAY_OPTIONS_METHOD_ID] = $payData->methodId;
         $paramsMap[PAY_OPTIONS_TRADE_TYPE] = $payData->transType;
@@ -144,7 +144,7 @@ function generateServerHostPayParams($params){
             $paramsMap[CREDIT_CARD_EXPIRE_YEAR] = $params->expireYear;
         }
         if ($params->extendInfo != null && $params->extendInfo != "") {
-            $paramsMap[ORDER_EXTEND_INFO] = $params->extendInfo;
+            $paramsMap[ORDER_EXTEND_INFO] = json_encode($params->extendInfo);
         }
         $paramsMap[PAY_OPTIONS_TRADE_TYPE] = $params->transType;
         $paramsMap[PAY_OPTIONS_ASYNC_NOTICE_URL] = $params->callbackUrl;
@@ -158,7 +158,7 @@ function generateServerHostPayParams($params){
         $paramsMap[ORDER_AMOUNT] = (string)$refund["amount"];
         $paramsMap[ORDER_DATE] = (string)$refund["date"];
         if ($refund["extendInfo"] != null && strcmp($refund["extendInfo"], "") != 0) {
-            $paramsMap[ORDER_EXTEND_INFO] = $refund["extendInfo"];
+            $paramsMap[ORDER_EXTEND_INFO] = json_encode($refund["extendInfo"]);
         }
         $paramsMap[PAY_OPTIONS_TRADE_TYPE] = $refund["transType"];
         $paramsMap[PAY_OPTIONS_ASYNC_NOTICE_URL] = $refund["callbackUrl"];
@@ -172,7 +172,7 @@ function generateServerHostPayParams($params){
         $paramsMap[ORDER_ID] = $cancel["orderId"];
         $paramsMap[ORDER_DATE] = (string)$cancel["date"];
         if ($cancel["extendInfo"] != null && strcmp($cancel["extendInfo"], "") != 0) {
-            $paramsMap[ORDER_EXTEND_INFO] = $cancel["extendInfo"];
+            $paramsMap[ORDER_EXTEND_INFO] = json_encode($cancel["extendInfo"]);
         }
         $paramsMap[PAY_OPTIONS_TRADE_TYPE] = $cancel["transType"];
         return $paramsMap;
@@ -214,10 +214,10 @@ function generateServerHostPayParams($params){
             $requestArr["seller"] = (string)$getArray["seller"];
         }
         if ($getArray["channelInfo"] != null && strcmp($getArray["channelInfo"], "") !== 0) {
-            $requestArr["channelInfo"] = $getArray["channelInfo"];
+            $requestArr["channelInfo"] = json_encode($getArray["channelInfo"]);
         }
         if ($getArray["extendInfo"] != null && strcmp($getArray["extendInfo"], "") !== 0) {
-            $requestArr["extendInfo"] = $getArray["extendInfo"];
+            $requestArr["extendInfo"] = json_encode($getArray["extendInfo"]);
         }
         ksort($requestArr);
         $requestArr["sign"] = $this->signParams(http_build_query($requestArr), $config);
