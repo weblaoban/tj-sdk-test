@@ -156,8 +156,12 @@ class UqpayApi
         $payMethod = new payMethod();
         $UqpayScanType = $payMethod->UqpayScanType;
 //        $this->validatePayData($pay);
-        if ($pay->scanType) Yii::warning("uqpay qr code payment need Scan Type");
-        if (strcmp($pay->scanType, $UqpayScanType["Merchant"]) == 0 && $pay->identity) Yii::warning("uqpay qr code payment need the identity data when scan type is merchant");
+        if (!$pay->scanType) {
+            return json_encode(["code"=>'400',"message"=>"uqpay qr code payment need Scan Type"]);
+        };
+        if (strcmp($pay->scanType, $UqpayScanType["Merchant"]) == 0 && !$pay->identity){
+            return json_encode(["code"=>'400',"message"=>"uqpay qr code payment need the identity data when scan type is merchant"]);
+        };
         $paramsMap = $this->generatePayParamsMap($pay, $scenes);
         $result = $this->directFormPost($url, $paramsMap);
         return $result;
@@ -165,13 +169,14 @@ class UqpayApi
 
     private function OfflineQRCodePayment($pay, $url, $scenes)
     {
-        if ($pay->identity == null)
-            Yii::warning("uqpay offline qr code payment need the identity data");
-        if ($pay->merchantCity == null) {
-            Yii::warning("uqpay offline qr code payment need the merchant city data");
+        if (!$pay->identity){
+            return json_encode(["code"=>'400',"message"=>"uqpay offline qr code payment need the identity data"]);
         }
-        if ($pay->terminalID == null) {
-            Yii::warning("uqpay offline qr code payment need the terminal id data");
+        if (!$pay->merchantCity) {
+            return json_encode(["code"=>"400","message"=>"uqpay offline qr code payment need the merchant city data"]);
+        }
+        if (!$pay->terminalID) {
+            return json_encode(["code"=>"400","message"=>"uqpay offline qr code payment need the terminal id data"]);
         }
         $paramsMap = $this->generatePayParamsMap($pay, $scenes);
         return $this->directFormPost($url, $paramsMap);
@@ -179,8 +184,8 @@ class UqpayApi
 
     private function RedirectPayment($payOptions, $url, $scenes)
     {
-        if ($payOptions->returnUrl == null || $payOptions->returnUrl == "") {
-            Yii::warning("uqpay online payment need sync notice url");
+        if (!$payOptions->returnUrl || $payOptions->returnUrl == "") {
+            return json_encode(["code"=>"400","message"=>"uqpay online payment need sync notice url"]);
         }
         $paramsMap = $this->generatePayParamsMap($payOptions, $scenes);
         $paramsMap[PAY_OPTIONS_SYNC_NOTICE_URL] = $payOptions->returnUrl;
@@ -210,8 +215,9 @@ class UqpayApi
 
     private function ThreeDSecurePayment($payData, $url, $scenes)
     {
-        if ($payData->returnUrl == null || strcmp($payData->returnUrl, "") == 0)
-            Yii::warning("uqpay 3D secure payment need sync notice url");
+        if (!$payData->returnUrl || strcmp($payData->returnUrl, "") == 0){
+            return json_encode(["code"=>"400","message"=>"uqpay 3D secure payment need sync notice url"]);
+        }
         $paramsData = $this->generatePayParamsMap($payData, $scenes);
         $transResult = new TransResult($paramsData, $url, $scenes);
         return $transResult;
@@ -220,11 +226,14 @@ class UqpayApi
 
     private function InAppPayment($payData, $url, $scenes)
     {
-        if ($payData->clientType == null) Yii::warning("client type is required for uqpay in-app payment");
+        if (!$payData->clientType){
+            return json_encode(["code"=>"400","message"=>"client type is required for uqpay in-app payment"]);
+        }
         $payMethod = new payMethod();
         $paymentSupportClient = $payMethod->paymentSupportClient;
-        if (strcmp($payData->clientType, $paymentSupportClient["PC_WEB"]) == 0) Yii::warning("uqpay in-app payment not support pc clientType");
-        $payUtil = new payUtil();
+        if (strcmp($payData->clientType, $paymentSupportClient["PC_WEB"]) == 0){
+            return json_encode(["code"=>"400","message"=>"uqpay in-app payment not support pc clientType"]);
+        }
         $paramsMap = $this->generatePayParamsMap($payData, $scenes);
         $result = $this->directFormPost($url, $paramsMap);
         return $result;
@@ -232,8 +241,8 @@ class UqpayApi
 
     private function PreAuthFinish(PreAuthOrder $order)
     {
-        if ($order->uqOrderId <= 0) {
-            Yii::warning("uqpay order id is required");
+        if (!$order->uqOrderId || $order->uqOrderId <= 0) {
+            return json_encode(["code"=>"400","message"=>"uqpay order id is required"]);
         }
         $paramsMap = array();
         $paramsMap["transName"] = $order->transName;

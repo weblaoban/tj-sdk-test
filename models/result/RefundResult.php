@@ -25,7 +25,7 @@ class RefundResult
         $this->merchantId = (int)(string)$mapResult[AUTH_MERCHANT_ID];
         $this->transType = (string)$mapResult[PAY_OPTIONS_TRADE_TYPE];
         $this->message = (string)$mapResult[RESULT_MESSAGE];
-        $this->date = date((int)$mapResult[ORDER_DATE]);
+        $this->date = $mapResult[ORDER_DATE];
         $this->orderId = (string)$mapResult[ORDER_ID];
         $this->uqOrderId = (int)(string)$mapResult[RESULT_UQPAY_ORDER_ID];
         $this->amount = $mapResult[ORDER_AMOUNT];

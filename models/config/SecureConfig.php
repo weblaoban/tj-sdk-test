@@ -37,14 +37,14 @@ class SecureConfig
             $this->privateKey = $this->privateKeyStr;
         }
         if ($this->privateKey == null) {
-            throw new \Exception("Load Uqpay Payment Private Key Fail!");
+            return json_encode(["code"=>"400","message"=>"Load Uqpay Payment Private Key Fail!"]);
         }
         return $this->privateKey;
     }
 
     public function getPublicKey()
     {
-        if ($this->publicKey != null) {
+        if ($this->publicKey) {
             return $this->publicKey;
         }
 
@@ -53,8 +53,8 @@ class SecureConfig
         } else if (strcmp($this->publicKeyPath, "") == 0) {
             $this->publicKey = $this->publicKeyStr;
         }
-        if ($this->publicKey == null) {
-            Yii::warning("Load Uqpay Payment Public Key Fail!");
+        if (!$this->publicKey) {
+            return json_encode(["code"=>"400","message"=>"Load Uqpay Payment Public Key Fail!"]);
         }
         return $this->publicKey;
     }

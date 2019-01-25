@@ -242,8 +242,9 @@ function generateServerHostPayParams($params){
     }
     function verifyUqpayNotice($paramsMap, paygateConfig $config)
     {
-        if ($paramsMap[AUTH_SIGN] == null)
-            Yii::warning("The payment result is not a valid uqpay result, sign data is missing");
+        if (!$paramsMap[AUTH_SIGN]){
+            echo json_encode(["code"=>"400","message"=>"The payment result is not a valid uqpay result, sign data is missing"]);
+        }
         $needVerifyParams = array();
         foreach ($paramsMap as $k => $v) {
             if ($k != AUTH_SIGN) {
@@ -254,7 +255,9 @@ function generateServerHostPayParams($params){
         $paramsQuery = urldecode(http_build_query($needVerifyParams));
         $RSAUtil = new RSAUtil();
         $verify = $RSAUtil->verify($paramsQuery, (string)$paramsMap[AUTH_SIGN], $config->getRSA()->publicKeyPath);
-        if (!(boolean)$verify)  Yii::warning("The payment result is invalid, be sure is from the UQPAY server");
+        if (!(boolean)$verify){
+            echo json_encode(["code"=>"400","message"=>"The payment result is invalid, be sure is from the UQPAY server"]);
+        };
     }
 
     /**
@@ -268,7 +271,7 @@ function generateServerHostPayParams($params){
                 return;
             }
             if (gettype($v) == 'object' || gettype($v) == 'array') {
-                $obj[$k] = (array)object_to_array($v);
+                $obj[$k] = (array)$this->object_to_array($v);
             }
         }
 
