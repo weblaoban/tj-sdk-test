@@ -365,13 +365,11 @@ class UqpayApi
                             }
                             break;
                         default:
-                            return;
                     }
                 case "ThreeDCreditCard":
                     return $this->ThreeDSecurePayment($order, $this->apiUrl(PAYGATE_API_PAY), $scenes);
                 case "MerchantHost":
-                    $merchantHost = new MerchantHostDTO();
-                    $merchantHost->attributes = $order->merchantHost;
+                    $merchantHost=$order->merchantHost;
                     if ($merchantHost->validate()) {
                         return $this->MerchantHostPayment($order, $this->apiUrl(PAYGATE_API_PAY), $scenes);
                     } else {
@@ -379,10 +377,8 @@ class UqpayApi
                         return $errors;
                     }
                 case "ServerHost":
-                    $serverHost = new ServerHostDTO();
-                    $serverHost->attributes = $order;
+                    $serverHost = $order->serverHost;
                     if ($serverHost->validate()) {
-                        $order->merchantHost = $serverHost;
                         return $this->ServerHostPayment($order, $this->apiUrl(PAYGATE_API_PAY), $scenes);
                     } else {
                         $errors = $serverHost->errors;
