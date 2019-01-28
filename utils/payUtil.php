@@ -229,6 +229,7 @@ class payUtil
 
     function signParams($data, paygateConfig $config)
     {
+        ksort($date);
         $dirPath = Yii::$app->basePath;
         $prvPath = $config->getRSA()->privateKeyPath;
         $prvKey = file_get_contents($dirPath.'\\'.$prvPath);

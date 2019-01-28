@@ -17,6 +17,9 @@ use tj\sdk\test\models\enroll\EnrollOrder;
 use tj\sdk\test\models\enroll\VerifyOrder;
 use tj\sdk\test\models\exchangeRate\ExchangeRateQueryDTO;
 use tj\sdk\test\models\merchant\MerchantRegisterDTO;
+use tj\sdk\test\models\operation\OrderCancel;
+use tj\sdk\test\models\operation\OrderQuery;
+use tj\sdk\test\models\operation\OrderRefund;
 use tj\sdk\test\models\pay\PayOrder;
 use tj\sdk\test\models\preAuth\PreAuthOrder;
 use tj\sdk\test\models\result\TransResult;
@@ -108,7 +111,7 @@ class UqpayApi
         }
         ksort($paramsMap);
         $result = $payUtil->signParams($paramsMap, $this->paygateConfig);
-//        $result["signType"] = $payData->signType?$payData->signType: (string)$payMethod->SignTypeEnum['RSA'];
+        $result["signtype"] = $payData->signType ? $payData->signType : (string)$payMethod->SignTypeEnum['RSA'];
         return $result;
     }
 
@@ -134,19 +137,12 @@ class UqpayApi
         $paramsMap = $payUtil->signParams($paramsMap, $this->paygateConfig);
         ksort($paramsMap);
         $resultMap = $httpRequest->httpJsonPost($url, $paramsMap);
-//        $payUtil->verifyUqpayNotice($resultMap, $this->paygateConfig);
-        return $resultMap;
-    }
-
-    private function redirectPost($url, $paramsMap)
-    {
-        $payUtil = new payUtil();
-        $httpRequest = new httpRequest();
-        ksort($paramsMap);
-        $paramsMap = $payUtil->signParams($paramsMap, $this->paygateConfig);
-        ksort($paramsMap);
-        $resultMap = $httpRequest->httpRedirectArrayPost($url, $paramsMap);
-        return $resultMap;
+        $code = $resultMap->getStatusCode();
+        $result = json_decode((string)$resultMap->getBody());
+        if ($code >= 200 && $code < 300) {
+            $payUtil->verifyUqpayNotice($result, $this->paygateConfig);
+        }
+        return $result;
     }
 
 
@@ -159,12 +155,11 @@ class UqpayApi
     {
         $payMethod = new payMethod();
         $UqpayScanType = $payMethod->UqpayScanType;
-//        $this->validatePayData($pay);
         if (!$pay->scanType) {
-            return json_encode(["code"=>'400',"message"=>"uqpay qr code payment need Scan Type"]);
+            return json_encode(["code" => '400', "message" => "uqpay qr code payment need Scan Type"]);
         };
-        if (strcmp($pay->scanType, $UqpayScanType["Merchant"]) == 0 && !$pay->identity){
-            return json_encode(["code"=>'400',"message"=>"uqpay qr code payment need the identity data when scan type is merchant"]);
+        if (strcmp($pay->scanType, $UqpayScanType["Merchant"]) == 0 && !$pay->identity) {
+            return json_encode(["code" => '400', "message" => "uqpay qr code payment need the identity data when scan type is merchant"]);
         };
         $paramsMap = $this->generatePayParamsMap($pay, $scenes);
         $result = $this->directFormPost($url, $paramsMap);
@@ -173,14 +168,14 @@ class UqpayApi
 
     private function OfflineQRCodePayment($pay, $url, $scenes)
     {
-        if (!$pay->identity){
-            return json_encode(["code"=>'400',"message"=>"uqpay offline qr code payment need the identity data"]);
+        if (!$pay->identity) {
+            return json_encode(["code" => '400', "message" => "uqpay offline qr code payment need the identity data"]);
         }
         if (!$pay->merchantCity) {
-            return json_encode(["code"=>"400","message"=>"uqpay offline qr code payment need the merchant city data"]);
+            return json_encode(["code" => "400", "message" => "uqpay offline qr code payment need the merchant city data"]);
         }
         if (!$pay->terminalID) {
-            return json_encode(["code"=>"400","message"=>"uqpay offline qr code payment need the terminal id data"]);
+            return json_encode(["code" => "400", "message" => "uqpay offline qr code payment need the terminal id data"]);
         }
         $paramsMap = $this->generatePayParamsMap($pay, $scenes);
         return $this->directFormPost($url, $paramsMap);
@@ -189,7 +184,7 @@ class UqpayApi
     private function RedirectPayment($payOptions, $url, $scenes)
     {
         if (!$payOptions->returnUrl || $payOptions->returnUrl == "") {
-            return json_encode(["code"=>"400","message"=>"uqpay online payment need sync notice url"]);
+            return json_encode(["code" => "400", "message" => "uqpay online payment need sync notice url"]);
         }
         $paramsMap = $this->generatePayParamsMap($payOptions, $scenes);
         $paramsMap[PAY_OPTIONS_SYNC_NOTICE_URL] = $payOptions->returnUrl;
@@ -219,8 +214,8 @@ class UqpayApi
 
     private function ThreeDSecurePayment($payData, $url, $scenes)
     {
-        if (!$payData->returnUrl || strcmp($payData->returnUrl, "") == 0){
-            return json_encode(["code"=>"400","message"=>"uqpay 3D secure payment need sync notice url"]);
+        if (!$payData->returnUrl || strcmp($payData->returnUrl, "") == 0) {
+            return json_encode(["code" => "400", "message" => "uqpay 3D secure payment need sync notice url"]);
         }
         $paramsData = $this->generatePayParamsMap($payData, $scenes);
         $transResult = new TransResult($paramsData, $url, $scenes);
@@ -230,13 +225,13 @@ class UqpayApi
 
     private function InAppPayment($payData, $url, $scenes)
     {
-        if (!$payData->clientType){
-            return json_encode(["code"=>"400","message"=>"client type is required for uqpay in-app payment"]);
+        if (!$payData->clientType) {
+            return json_encode(["code" => "400", "message" => "client type is required for uqpay in-app payment"]);
         }
         $payMethod = new payMethod();
         $paymentSupportClient = $payMethod->paymentSupportClient;
-        if (strcmp($payData->clientType, $paymentSupportClient["PC_WEB"]) == 0){
-            return json_encode(["code"=>"400","message"=>"uqpay in-app payment not support pc clientType"]);
+        if (strcmp($payData->clientType, $paymentSupportClient["PC_WEB"]) == 0) {
+            return json_encode(["code" => "400", "message" => "uqpay in-app payment not support pc clientType"]);
         }
         $paramsMap = $this->generatePayParamsMap($payData, $scenes);
         $result = $this->directFormPost($url, $paramsMap);
@@ -246,7 +241,7 @@ class UqpayApi
     private function PreAuthFinish(PreAuthOrder $order)
     {
         if (!$order->uqOrderId || $order->uqOrderId <= 0) {
-            return json_encode(["code"=>"400","message"=>"uqpay order id is required"]);
+            return json_encode(["code" => "400", "message" => "uqpay order id is required"]);
         }
         $paramsMap = array();
         $paramsMap["transName"] = $order->transName;
@@ -256,49 +251,65 @@ class UqpayApi
 
     private function EnrollCard(EnrollOrder $order)
     {
-        $paramsMap = array();
-        $paramsMap["orderId"] = $order->orderId;
-        $paramsMap["date"] = $order->date;
-        $paramsMap["verifyCode"] = $order->verifyCode;
-        $paramsMap["codeOrderId"] = $order->codeOrderId;
-        return $this->directFormPost($this->apiUrl(PAYGATE_API_ENROLL), $paramsMap);
+        if($order->validate()){
+            $payUtil = new payUtil();
+            $paramsMap = $payUtil->generateEnrollCardParams($order,$this->merchantConfig);
+            $paramsMap = $payUtil->signParams($paramsMap, $this->paygateConfig);
+            return $this->directFormPost($this->apiUrl(PAYGATE_API_ENROLL), $paramsMap);
+        }else{
+            return $order->errors;
+        }
     }
 
     private function VerifyPhone(VerifyOrder $order)
     {
-        $payMethodObject = new payMethod();
-        $UqpayTradeType = $payMethodObject->UqpayTradeType;
-        $order->tradeType = $UqpayTradeType["verifycode"];
-        return $this->directFormPost($this->apiUrl(PAYGATE_API_VERIFY), $order);
+        if ($order->validate()) {
+            $payUtil = new payUtil();
+            $paramsMap = $payUtil->generateVerifyPhonePayParams($order, $this->merchantConfig);
+            $paramsMap = $payUtil->signParams($paramsMap, $this->paygateConfig);
+            return $this->directFormPost($this->apiUrl(PAYGATE_API_VERIFY), $paramsMap);
+        } else {
+            return $order->errors;
+        }
     }
 
-    private function Refund($refund)
+    private function Refund(OrderRefund $refund)
     {
-//        $this->validatePayData($refund, "refund request data invalid for uqpay order operation");
-        $payUtil = new payUtil();
-        $paramsMap = $payUtil->generateRefundParams($refund, $this->merchantConfig);
-        ksort($paramsMap);
-        $paramsMap = $payUtil->signParams($paramsMap, $this->paygateConfig);
-        $result = $this->directFormPost($this->apiUrl(PAYGATE_API_REFUND), $paramsMap);
-        return $result;
+        if ($refund->validate()) {
+            $payUtil = new payUtil();
+            $paramsMap = $payUtil->generateRefundParams($refund, $this->merchantConfig);
+            $paramsMap = $payUtil->signParams($paramsMap, $this->paygateConfig);
+            $result = $this->directFormPost($this->apiUrl(PAYGATE_API_REFUND), $paramsMap);
+            return $result;
+        } else {
+            return $refund->errors;
+        }
     }
 
-    private function Cancel($cancel)
+    private function Cancel(OrderCancel $cancel)
     {
-//        $this->validatePayData($cancel, "cancel payment request data invalid for uqpay order operation");
-        $payUtil = new payUtil();
-        $paramsMap = $payUtil->generateCancelParams($cancel, $this->merchantConfig);
-        $result = $this->directFormPost($this->apiUrl(PAYGATE_API_CANCEL), $paramsMap);
-        return $result;
+        if ($cancel->validate()) {
+            $payUtil = new payUtil();
+            $paramsMap = $payUtil->generateRefundParams($cancel, $this->merchantConfig);
+            $paramsMap = $payUtil->signParams($paramsMap, $this->paygateConfig);
+            $result = $this->directFormPost($this->apiUrl(PAYGATE_API_CANCEL), $paramsMap);
+            return $result;
+        } else {
+            return $cancel->errors;
+        }
     }
 
-    private function Query($query)
+    private function Query(OrderQuery $query)
     {
-//        $this->validatePayData($query, "query request data invalid for uqpay order operation");
-        $payUtil = new payUtil();
-        $paramsMap = $payUtil->generateQueryParams($query, $this->merchantConfig);
-        $result = $this->directFormPost($this->apiUrl(PAYGATE_API_QUERY), $paramsMap);
-        return $result;
+        if ($query->validate()) {
+            $payUtil = new payUtil();
+            $paramsMap = $payUtil->generateRefundParams($query, $this->merchantConfig);
+            $paramsMap = $payUtil->signParams($paramsMap, $this->paygateConfig);
+            $result = $this->directFormPost($this->apiUrl(PAYGATE_API_QUERY), $paramsMap);
+            return $result;
+        } else {
+            return $query->errors;
+        }
     }
 
 
@@ -339,9 +350,9 @@ class UqpayApi
                         case $payMethodObject->VISA:
                             $bankCard = new BankCardDTO();
                             $bankCard->attributes = $order->bankCard;
-                            if($bankCard->validate()){
+                            if ($bankCard->validate()) {
                                 return $this->CreditCardPayment($order, $this->apiUrl(PAYGATE_API_PAY), $scenes);
-                            }else{
+                            } else {
                                 $errors = $bankCard->errors;
                                 return $errors;
                             }
@@ -353,20 +364,20 @@ class UqpayApi
                     return $this->ThreeDSecurePayment($order, $this->apiUrl(PAYGATE_API_PAY), $scenes);
                 case "MerchantHost":
                     $merchantHost = new MerchantHostDTO();
-                    $merchantHost->attributes=$order->merchantHost;
-                    if($merchantHost->validate()){
+                    $merchantHost->attributes = $order->merchantHost;
+                    if ($merchantHost->validate()) {
                         return $this->MerchantHostPayment($order, $this->apiUrl(PAYGATE_API_PAY), $scenes);
-                    }else{
+                    } else {
                         $errors = $merchantHost->errors;
                         return $errors;
                     }
                 case "ServerHost":
                     $serverHost = new ServerHostDTO();
-                    $serverHost->attributes=$order;
-                    if($serverHost->validate()){
-                        $order->merchantHost=$serverHost;
+                    $serverHost->attributes = $order;
+                    if ($serverHost->validate()) {
+                        $order->merchantHost = $serverHost;
                         return $this->ServerHostPayment($order, $this->apiUrl(PAYGATE_API_PAY), $scenes);
-                    }else{
+                    } else {
                         $errors = $serverHost->errors;
                         return $errors;
                     }
@@ -379,8 +390,6 @@ class UqpayApi
             return $errors;
         }
     }
-
-
 
 
     function preAuth(PreAuthOrder $order)
@@ -440,9 +449,6 @@ class UqpayApi
 
     function verify(VerifyOrder $order)
     {
-        $payMethodObject = new payMethod();
-        $UqpayTradeType = $payMethodObject->UqpayTradeType;
-        $order->transType = $UqpayTradeType["verifycode"];
         return $this->VerifyPhone($order);
     }
 
@@ -450,30 +456,34 @@ class UqpayApi
     // Merchant Register API
     //===========================================
 
-    public function register(MerchantRegisterDTO $registerDTO){
+    public function register(MerchantRegisterDTO $registerDTO)
+    {
         $this->setAuthForJsonParams($registerDTO);
-        return $this->directJsonPost($registerDTO,$this->appgateApiUrl(APPGATE_API_REGISTER));
+        return $this->directJsonPost($registerDTO, $this->appgateApiUrl(APPGATE_API_REGISTER));
     }
 
 //===========================================
 // EMVCO QRCode API
 //===========================================
 
-    public function createQRCode(EmvcoCreateDTO $createDTO){
+    public function createQRCode(EmvcoCreateDTO $createDTO)
+    {
         $this->setAuthForJsonParams($createDTO);
-        return $this->directJsonPost($createDTO,$this->appgateApiUrl(APPGATE_API_EMVCO_CREATE));
+        return $this->directJsonPost($createDTO, $this->appgateApiUrl(APPGATE_API_EMVCO_CREATE));
     }
 
-    public function getQRCodePayload(EmvcoGetPayloadDTO $payloadDTO){
+    public function getQRCodePayload(EmvcoGetPayloadDTO $payloadDTO)
+    {
         $this->setAuthForJsonParams($payloadDTO);
-        return $this->directJsonPost($payloadDTO,$this->appgateApiUrl(APPGATE_API_EMVCO_PAYLOAD));
+        return $this->directJsonPost($payloadDTO, $this->appgateApiUrl(APPGATE_API_EMVCO_PAYLOAD));
     }
 
     //===========================================
     // UQPAY Public Resource API
     //===========================================
 
-    public function queryExchangeRate(ExchangeRateQueryDTO $queryDTO){
+    public function queryExchangeRate(ExchangeRateQueryDTO $queryDTO)
+    {
         $this->setAuthForJsonParams($queryDTO);
         return $this->directJsonPost($queryDTO, $this->appgateApiUrl(APPGATE_API_RES_EXCHANGE_RATE));
     }
