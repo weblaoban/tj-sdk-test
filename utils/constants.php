@@ -19,6 +19,7 @@ define("ORDER_ID", "orderid");
 define("ORDER_AMOUNT", "amount");
 define("ORDER_CURRENCY", "currency");
 define("ORDER_TRANS_NAME", "transname");
+define("CODE_ORDER_ID", "codeorderid");
 define("ORDER_DATE", "date");
 define("ORDER_QUANTITY", "quantity");
 define("ORDER_STORE_ID", "storeid");

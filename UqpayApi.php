@@ -249,14 +249,21 @@ class UqpayApi
         return $this->directFormPost($this->apiUrl(PAYGATE_API_PRE_AUTH), $paramsMap);
     }
 
-    private function EnrollCard(EnrollOrder $order)
+    function EnrollCard(EnrollOrder $order)
     {
-        if($order->validate()){
+        $payUtil = new payUtil();
+        if ($order->validate()) {
+            $isStandard = $payUtil->validateCard($order->cardNum);
+            if ($isStandard) {
+                if (!$order->expireMonth || !$order->expireYear || !$order->cvv) {
+                    return json_encode(["code" => "400", "message" => "TransCardValidDateEmpty"]);
+                }
+            }
             $payUtil = new payUtil();
-            $paramsMap = $payUtil->generateEnrollCardParams($order,$this->merchantConfig);
+            $paramsMap = $payUtil->generateEnrollCardParams($order, $this->merchantConfig);
             $paramsMap = $payUtil->signParams($paramsMap, $this->paygateConfig);
             return $this->directFormPost($this->apiUrl(PAYGATE_API_ENROLL), $paramsMap);
-        }else{
+        } else {
             return $order->errors;
         }
     }

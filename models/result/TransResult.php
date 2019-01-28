@@ -48,14 +48,13 @@ class TransResult extends BaseResult {
               $this->qrCode=$postData['qrCode'];
               break;
           case 'ThreeDCreditCard':
+          case 'OnlinePay':
               $redirectPost = new RedirectPostData();
               $redirectPost->apiURL=$url;
               $redirectPost->postData=$postData;
               $this->redirectPostData = $redirectPost;
               break;
           default:
-              $this->code=$postData['code'];
-              $this->message=$postData['message'];
       }
   }
 }

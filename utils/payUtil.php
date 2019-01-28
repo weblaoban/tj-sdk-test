@@ -81,15 +81,8 @@ class payUtil
 
     function generateServerHostPayParams($params){
         $paramsMap = array();
-        $paramsMap[CREDIT_CARD_CARD_NUM] = $params->cardNum;
         $paramsMap[CREDIT_CARD_PHONE] = $params->phone;
         $paramsMap[CREDIT_TOKEN] = $params->token;
-        if($params->expireMonth){
-            $paramsMap[CREDIT_CARD_EXPIRE_MONTH] = $params->expireMonth;
-        }
-        if($params->expireYear){
-            $paramsMap[CREDIT_CARD_EXPIRE_YEAR] = $params->expireYear;
-        }
         return $paramsMap;
     }
 
@@ -102,7 +95,7 @@ class payUtil
         }
         $paramsMap[ORDER_ID] = $payData->orderId;
         $paramsMap[ORDER_TRANS_NAME] = $payData->transName;
-        $paramsMap[ORDER_DATE] = $payData->date->getTime();
+        $paramsMap[ORDER_DATE] = $payData->date;
         $paramsMap[CREDIT_CARD_CARD_NUM] = $payData->cardNum;
         $paramsMap[CREDIT_CARD_PHONE] = $payData->phone;
         $paramsMap[PAY_OPTIONS_CLIENT_TYPE] = $payData->clientType;
@@ -127,9 +120,8 @@ class payUtil
         $paramsMap[ORDER_ID] = $params->orderId;
         $paramsMap[PAY_OPTIONS_METHOD_ID] = $params->methodId;
         $paramsMap[ORDER_TRANS_NAME] = $params->transName;
-        // $paramsMap[CODE_ORDER_ID] = $params->codeOrderId;
-        $paramsMap['codeuqpayid'] = $params->codeOrderId;
-        $paramsMap[ORDER_DATE] = $params->date->getTime();
+         $paramsMap[CODE_ORDER_ID] = $params->codeOrderId;
+        $paramsMap[ORDER_DATE] = $params->date;
         $paramsMap[CREDIT_CARD_CARD_NUM] = $params->cardNum;
         $paramsMap[CREDIT_CARD_VERIFY_CODE] = $params->verifyCode;
         $paramsMap[CREDIT_CARD_PHONE] = $params->phone;
@@ -229,7 +221,7 @@ class payUtil
 
     function signParams($data, paygateConfig $config)
     {
-        ksort($date);
+        ksort($data);
         $dirPath = Yii::$app->basePath;
         $prvPath = $config->getRSA()->privateKeyPath;
         $prvKey = file_get_contents($dirPath.'\\'.$prvPath);
@@ -283,5 +275,26 @@ class payUtil
         }
 
         return $obj;
+    }
+
+    function validateCard ( $cardnumber )
+    {
+        $cardnumber = preg_replace ( " /\D|\s/ " , "" , $cardnumber ) ;
+        $cardlength = strlen ( $cardnumber ) ;
+        if ( $cardlength != 0 )
+        {
+            $parity = $cardlength % 2 ;
+            $sum = 0 ;
+            for ( $i = 0 ; $i < $cardlength ; $i ++ )
+            {
+                $digit = $cardnumber [ $i ] ;
+                if ( $i % 2 == $parity ) $digit = $digit * 2 ;
+                if ( $digit > 9 ) $digit = $digit - 9 ;
+                $sum = $sum + $digit ;
+            }
+            $valid = ( $sum % 10 == 0 ) ;
+            return $valid ;
+        }
+        return false ;
     }
 }
