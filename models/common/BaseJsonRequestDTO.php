@@ -11,7 +11,8 @@ class BaseJsonRequestDTO extends AuthDTO
         return  array_merge(parent::rules(),[
                 ['signType', 'default', 'value' => 1],
                 ['signature', 'default', 'value' => '000000'],
-                [['date'], 'date', 'required'],
+//                [['date'], 'date', 'required'],
+                [['date'], 'required'],
             ]);
 
     }
